@@ -28,7 +28,7 @@ const en: Translation = {
     google: 'Continue with Google',
     apple: 'Continue with Apple',
     terms: 'By continuing you agree to the Terms of Use and Privacy Policy.',
-    devNotice: 'Test sign-in: real authentication arrives with Supabase.',
+    error: 'Could not sign in. Please try again.',
   },
   tabs: {
     map: 'Map',

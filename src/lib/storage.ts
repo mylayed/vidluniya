@@ -10,7 +10,6 @@ export const storageKeys = {
   onboarded: 'onboarded',
   themePreference: 'themePreference',
   language: 'language',
-  devSession: 'devSession',
 } as const;
 
 export async function getItem(key: string): Promise<string | null> {

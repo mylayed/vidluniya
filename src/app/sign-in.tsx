@@ -1,23 +1,36 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Platform, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { CapsuleWave } from '@/components/capsule-wave';
 import { AppText } from '@/components/ui/app-text';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
-import { useSession } from '@/features/session/session-provider';
+import { signInWithGoogle } from '@/features/session/google-auth';
 import { useTheme } from '@/theme/theme-provider';
 import { spacing } from '@/theme/tokens';
 
 export default function SignInScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { signInDev } = useSession();
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
 
-  // TODO(Етап 1, Supabase): Google — supabase.auth.signInWithIdToken / OAuth,
-  // Apple — expo-apple-authentication на iOS.
-  const providers = Platform.OS === 'ios' ? (['apple', 'google'] as const) : (['google', 'apple'] as const);
+  const onGoogle = async () => {
+    setBusy(true);
+    setFailed(false);
+    try {
+      await signInWithGoogle();
+      // Після успіху SessionProvider побачить сесію, і маршрут зміниться сам.
+    } catch (error) {
+      if (__DEV__) console.warn('Google sign-in failed', error);
+      setFailed(true);
+    } finally {
+      setBusy(false);
+    }
+  };
 
+  // TODO(Етап 1): Apple (expo-apple-authentication) — потрібен платний Apple Developer.
   return (
     <Screen style={styles.container}>
       <View style={styles.hero}>
@@ -27,22 +40,15 @@ export default function SignInScreen() {
       </View>
 
       <View style={styles.actions}>
-        {providers.map((provider, i) => (
-          <Button
-            key={provider}
-            label={t(provider === 'google' ? 'auth.google' : 'auth.apple')}
-            variant={i === 0 ? 'primary' : 'secondary'}
-            onPress={() => signInDev(provider)}
-          />
-        ))}
+        {failed && (
+          <AppText variant="caption" style={[styles.note, { color: colors.danger }]}>
+            {t('auth.error')}
+          </AppText>
+        )}
+        <Button label={t('auth.google')} onPress={onGoogle} disabled={busy} />
         <AppText variant="caption" tone="secondary" style={styles.note}>
           {t('auth.terms')}
         </AppText>
-        {__DEV__ && (
-          <AppText variant="caption" tone="accent" style={styles.note}>
-            {t('auth.devNotice')}
-          </AppText>
-        )}
       </View>
     </Screen>
   );
